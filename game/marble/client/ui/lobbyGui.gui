@@ -73,6 +73,7 @@ new GuiControl(LobbyGui)
 	      iconPath = "marble/client/ui/xbox/";
 	      hostIcon = "BrainIcon";
 	      readyIcon = "Ready";
+         spectateIcon = "Spectate";
 	      demoOutOfTimeIcon = "DemoOutOfTimeIcon";
 	      skill1Icon = "stars_1";
 	      skill2Icon = "stars_2";
@@ -161,7 +162,7 @@ function LobbyGui::show(%this)
    else
       RootGui.setA($Text::Ready);
    RootGui.setB($Text::ExitGame);
-   RootGui.setY($Text::SelectPlayer);
+   RootGui.setY($Text::Spectate);
 
    %this.hosting = false;
 
@@ -310,7 +311,7 @@ function LobbyGui::updateHostingStatus(%this)
 	   //}
 	   
 	   if (%this.hosting && !isDemoLaunch() && !XBLiveIsRanked()) {
-	      RootGui.setLS($Text::ChangeLevels);
+	      //RootGui.setLS($Text::ChangeLevels);
          RootGui.setX($Text::LobbyHostServerSettings);
       }
    }
@@ -320,9 +321,12 @@ function LobbyGui::getReadyIcon(%this, %ready, %demoOutOfTime)
 {
    // if we are out of time, use the "out of time" icon for ready status
    if (%demoOutOfTime)
-      return LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.demoOutOfTimeIcon;
+      return    LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.demoOutOfTimeIcon;
    else if (%ready)
-      return LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.readyIcon;
+      if (%client.isspectating)
+         return LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.spectateIcon;
+      else
+         return LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.readyIcon;
    else
       return "";
 }
@@ -346,7 +350,7 @@ function LobbyGui::update(%this,%clientId,%name,%xbLiveId,%xbLiveSkill,%xbLiveVo
  	if (isPCBuild()) %xbLiveVoice = getRandom(1) + 1; 
 	
     %sanitizedText = %name;
-    if ($pref::Lobby::StreamerMode)
+    if ($pref::Server::StreamerMode)
     {
        %sanitizedText = getSubStr(%name, 0, 1) @ "...";
     }
@@ -707,7 +711,7 @@ function LobbyGui::updateHostInfo(%this)
    %missionName = ServerConnection.missionName; //GameMissionInfo.getMissionDisplayName(ServerConnection.missionId);
 
    %sanitizedText = ServerConnection.hostName;
-   if ($pref::Lobby::StreamerMode)
+   if ($pref::Server::StreamerMode)
    {
       %sanitizedText = getSubStr(ServerConnection.hostName, 0, 1) @ "...";
    }
@@ -861,16 +865,7 @@ function LobbyGui::onA(%this)
       return;
    }   
 
-   // For Spectator Mode ~ Connie  
-   if (ServerConnection.ready)
-   {
-      clientSetReadyStatus(!ServerConnection.ready);   
-   }
-   else
-   {
-      LobbySpectateDlg.show();
-   }
-   //----------------------------
+   clientSetReadyStatus(!ServerConnection.ready);
    
    if (!isPCBuild() && %this.hosting && XBLiveIsRanked() && ServerConnection.ready && ClientGroup.getCount() == 1)
    {
@@ -1000,7 +995,7 @@ function LobbyGuiPlayerList::onSelect( %this, %id, %text )
    // If we can't kick this person, change the Y action to "Show Gamercard"
    // that will take care of friend invites and all that other jazz
    if( !%showKick && !%showPlayerReview )
-      RootGui.setY( "" );//$Text::GamerCard );
+      RootGui.setY( $Text::Spectate );//$Text::GamerCard );
    else
       RootGui.setY( $Text::SelectPlayer );
 }
@@ -1024,24 +1019,29 @@ function LobbyGui::onY(%this)
    sfxPlay( AudioButtonDown );
    
    // have we selected ourselves?
-   %isSelf = $Player::ClientId $= %id;
-   
-   // get the name of the target
-   %name = getField(LobbyGuiPlayerList.getRowTextById(%id), 1);
-   // get the live id of the target
-   %otherXbliveid = %this.findXBLiveIdByClientId(%id);
-   // see if the target is a friend
-   //%otherFriend = XBLiveIsFriend(XBLiveGetSignInPort(), %otherXbliveid);
-   
-   %showPlayerReview = !%isSelf;
-   %showKick = !%isSelf && %this.hosting;
-   %showInviteFriend = false; //!%isSelf && !%otherFriend;
-   %showGamerCard = true;
-
-   if( !%isSelf )
+   if($Player::ClientId $= %id)
+   {
+      XMessagePopupDlg.show(0, $Text::Spectate @ "?",
+         $Text::Yes, "commandtoServer('SetSpectateStatus', true);",
+         $Text::No,  "commandtoServer('SetSpectateStatus', false);");
+      //XBLiveShowGamercardUI(XBLiveGetSignInPort(), %otherXbliveid);
+   }
+   else
+   {
+      // get the name of the target
+      %name = getField(LobbyGuiPlayerList.getRowTextById(%id), 1);
+      // get the live id of the target
+      %otherXbliveid = %this.findXBLiveIdByClientId(%id);
+      // see if the target is a friend
+      //%otherFriend = XBLiveIsFriend(XBLiveGetSignInPort(), %otherXbliveid);
+      
+      %showPlayerReview = !%isSelf;
+      %showKick = !%isSelf && %this.hosting;
+      %showInviteFriend = false; //!%isSelf && !%otherFriend;
+      %showGamerCard = true;
+      
       LobbyPopupDlg.show(%name,%id,%showPlayerReview,%showKick,%showInviteFriend,%showGamerCard);
-   //else
-   //   XBLiveShowGamercardUI(XBLiveGetSignInPort(), %otherXbliveid);
+   }
 }
 
 function LobbyGuiPlayerList::test(%this)

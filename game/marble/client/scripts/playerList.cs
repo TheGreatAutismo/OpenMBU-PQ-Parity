@@ -63,6 +63,7 @@ function handleClientSetServerParams(%msgType, %msgString, %message)
       ServerConnection.missionName      = getRecord(%message, 11);
       ServerConnection.inviteCode       = getRecord(%message, 12);
       ServerConnection.inviteVisibility = getRecord(%message, 13);
+      ServerConnection.forceSpectators  = getRecord(%message, 14);
             
       // set flag indicating that server params are present
       ServerConnection.hasParams = true;
@@ -137,7 +138,7 @@ function handleClientJoin(%msgType, %msgString, %clientName, %joinData, %isMe)
       echo(detag(%clientName) SPC "joined the game");
       sfxPlay(PlayerJoinSfx);
       %displayName = detag(%clientName);
-      if ($pref::Lobby::StreamerMode)
+      if ($pref::Server::StreamerMode)
       {
           %displayName = getSubStr(%displayName, 0, 1) @ "...";
       }
@@ -180,7 +181,7 @@ function handleClientDrop(%msgType, %msgString, %clientName, %clientId, %xbLiveI
       echo(detag(%clientName) SPC "left the game");
       sfxPlay(PlayerDropSfx);
       %displayName = detag(%clientName);
-      if ($pref::Lobby::StreamerMode)
+      if ($pref::Server::StreamerMode)
       {
           %displayName = getSubStr(%displayName, 0, 1) @ "...";
       }
@@ -193,7 +194,7 @@ function handleClientDrop(%msgType, %msgString, %clientName, %clientId, %xbLiveI
 function handleMPGameOver(%msgType, %msgString, %tied, %leaderName, %leaderPoints)
 {
    %name = detag(%leaderName);
-   if ($pref::Lobby::StreamerMode)
+   if ($pref::Server::StreamerMode)
    {
        %name = getSubStr(%name, 0, 1) @ "...";
    }

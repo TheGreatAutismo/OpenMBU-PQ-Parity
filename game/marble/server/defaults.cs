@@ -49,6 +49,8 @@ $Server::HighBandwidthMin = 100000; // minimum kilo bits per second up and down 
 $Server::MaxPlayers_LowBandwidth = 5;
 $Server::MaxPlayers_HighBandwidth = $Server::AbsMaxPlayers;
 $Pref::Server::MaxPlayers = 5; //$Server::MaxPlayers_HighBandwidth; // CHANGED FOR PATCH!!
+$Pref::Server::InviteVisibility = 1;
+$Pref::Server::ForceSpectators = false;
 
 $Server::GemGroupRadius = 20;
 $Server::MaxGemsPerGroup = 4;

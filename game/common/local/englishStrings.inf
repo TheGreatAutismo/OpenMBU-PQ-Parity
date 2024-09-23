@@ -264,6 +264,7 @@ $Text::MaxPlayers = "Max Players";
 $Text::PrivateSlots = "Private Slots";
 $Text::IsPrivate = "Private Game";
 $Text::InviteVisibility = "Invite Visibility";
+$Text::ForceSpectators = "Force Spectators";
 
 ;-------------------------------------------------------------------------------
 ; Leaderboard Select Menu
@@ -298,6 +299,7 @@ $Text::SelectPlayer = "Select Player";
 $Text::Player = "Player:";
 
 $Text::LobbyHostServerSettings = "Lobby Settings";
+$Text::Spectate = "Spectate";
 $Text::InviteVisibilityOptions = "Off\tHost Only\tAll";
 
 ;-------------------------------------------------------------------------------

@@ -39,16 +39,18 @@ function ServerSettingsGui::show(%this, %backGui)
     RootGui.setA( $Text::Save );
     RootGui.setB( $Text::Cancel );
 
-                            ServerSettingsList.addRow($Text::MaxPlayers, GetOptionListRangeText($Server::AbsMinPlayers, $Server::AbsMaxPlayers), 8);
-    if(allowPrivateSlots()) ServerSettingsList.addRow($Text::PrivateSlots, $Text::None TAB GetOptionListRangeText(1, $Server::AbsMaxPlayers - 1), 8);
-                            ServerSettingsList.addRow($Text::IsPrivate, $Text::No TAB $Text::Yes, 8);
-                            ServerSettingsList.addRow($Text::InviteVisibility, $Text::InviteVisibilityOptions, 8);
+                            ServerSettingsList.addRow($Text::MaxPlayers,       GetOptionListRangeText($Server::AbsMinPlayers, $Server::AbsMaxPlayers), 8);
+    if(allowPrivateSlots()) ServerSettingsList.addRow($Text::PrivateSlots,     $Text::None TAB GetOptionListRangeText(1, $Server::AbsMaxPlayers - 1),  8);
+                            ServerSettingsList.addRow($Text::IsPrivate,        $Text::No TAB $Text::Yes,                                               8);
+                            ServerSettingsList.addRow($Text::InviteVisibility, $Text::InviteVisibilityOptions,                                         8);
+                            ServerSettingsList.addRow($Text::ForceSpectators,  $Text::OptionOffOn,                                                     8);
 
     //Set indices of each option row here to be referred to by other things
     %this.maxPlayersIndex       = 0;
     %this.privateSlotsIndex     = 1;
     %this.privateGameIndex      = 2;
     %this.inviteVisibilityIndex = 3;
+    %this.forceSpectatorsIndex  = 4;
 
     //Max Players and Private Slots shouldn't wrap around from highest to lowest or vice versa
     ServerSettingsList.setOptionWrap(%this.maxPlayersIndex,   false);
@@ -58,7 +60,8 @@ function ServerSettingsGui::show(%this, %backGui)
                             ServerSettingsList.setOptionIndex(%this.maxPlayersIndex,       $pref::Server::MaxPlayers - $Server::AbsMinPlayers);
     if(allowPrivateSlots()) ServerSettingsList.setOptionIndex(%this.privateSlotsIndex,     $pref::Server::PrivateSlots);
                             ServerSettingsList.setOptionIndex(%this.privateGameIndex,      $Server::IsPrivate);
-                            ServerSettingsList.setOptionIndex(%this.inviteVisibilityIndex, $pref::Lobby::InviteVisibility);
+                            ServerSettingsList.setOptionIndex(%this.inviteVisibilityIndex, $pref::Server::InviteVisibility);
+                            ServerSettingsList.setOptionIndex(%this.forceSpectatorsIndex,  $pref::Server::ForceSpectators);
 }
 
 //This GUI only saves when pressing the Save button, but there are still some things to do on option change, like making sure private slots < max players
@@ -84,10 +87,11 @@ function ServerSettingsGui::onA(%this)
 {
     sfxPlay(AudioButtonDown);
 
-    $pref::Server::MaxPlayers      = ServerSettingsList.getOptionIndex(%this.maxPlayersIndex) + $Server::AbsMinPlayers;
-    $pref::Server::PrivateSlots    = ServerSettingsList.getOptionIndex(%this.privateSlotsIndex);
-    $Server::IsPrivate             = ServerSettingsList.getOptionIndex(%this.privateGameIndex);
-    $pref::Lobby::InviteVisibility = ServerSettingsList.getOptionIndex(%this.inviteVisibilityIndex);
+    $pref::Server::MaxPlayers       = ServerSettingsList.getOptionIndex(%this.maxPlayersIndex) + $Server::AbsMinPlayers;
+    $pref::Server::PrivateSlots     = ServerSettingsList.getOptionIndex(%this.privateSlotsIndex);
+    $Server::IsPrivate              = ServerSettingsList.getOptionIndex(%this.privateGameIndex);
+    $pref::Server::InviteVisibility = ServerSettingsList.getOptionIndex(%this.inviteVisibilityIndex);
+    $pref::Server::ForceSpectators  = ServerSettingsList.getOptionIndex(%this.forceSpectatorsIndex);
 
     if(!allowPrivateSlots())
         $pref::Server::PrivateSlots = 0;
@@ -95,7 +99,8 @@ function ServerSettingsGui::onA(%this)
     echo($Text::MaxPlayers       @ " = " @ $pref::Server::MaxPlayers);
     echo($Text::PrivateSlots     @ " = " @ $pref::Server::PrivateSlots);
     echo($Text::IsPrivate        @ " = " @ $Server::IsPrivate);
-    echo($Text::InviteVisibility @ " = " @ $pref::Lobby::InviteVisibility);
+    echo($Text::InviteVisibility @ " = " @ $pref::Server::InviteVisibility);
+    echo($Text::ForceSpectators  @ " = " @ $pref::Server::ForceSpectators);
     
     updateServerParams(); //Update player count (and probably whatever else later)
     RootGui.setContent(%this.backGui);
