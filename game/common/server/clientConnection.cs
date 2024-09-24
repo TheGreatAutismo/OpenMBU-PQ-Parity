@@ -160,12 +160,13 @@ function GameConnection::updateClientData(%client, %name, %xbLiveId, %xbLiveVoic
 
    // Save client preferences on the connection object for later use.
    %client.setPlayerName(%name);
-   %client.score = 0;
-   %client.xbLiveId = %xbLiveId;
+   %client.score       = 0;
+   %client.xbLiveId    = %xbLiveId;
    %client.xbLiveSkill = 0;
    %client.xbLiveVoice = %xbLiveVoice;
-   %client.invited = %invited;
-   %client.ready = false;
+   %client.invited     = %invited;
+   %client.ready       = false;
+   %client.spectate    = false;
    if (!%client.isAIControlled())
       %client.address = %client.getXnAddr();
    else
@@ -276,39 +277,41 @@ function buildClientJoinData(%client)
 	// if this is an AI, fake some of the data
 	if (%client.isAIControlled())
 	{
-      %message = %message @ %client @ "\n";
-      %message = %message @ 1 @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ "" @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 2 @ "\n"; // 2 = no communicator, although it shouldn't matter for bots
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 1 @ "\n";
+      %message = %message @ %client       @ "\n";
+      %message = %message @ 1             @ "\n"; //isAIControlled
+      %message = %message @ 0             @ "\n"; //isAdmin
+      %message = %message @ 0             @ "\n"; //isSuperAdmin
+      %message = %message @ ""            @ "\n"; //xbLiveId
+      %message = %message @ 0             @ "\n"; //xbLiveSkill
+      %message = %message @ 2             @ "\n"; //xbLiveVoice; 2 = no communicator, although it shouldn't matter for bots
+      %message = %message @ 0             @ "\n"; //address
+      %message = %message @ 0             @ "\n"; //rating
+      %message = %message @ 1             @ "\n"; //ready
+      %message = %message @ 0             @ "\n"; //spectate
       %message = %message @ %client.score @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 0 @ "\n";
-      %message = %message @ 0 @ "\n";
+      %message = %message @ 0             @ "\n"; //invited
+      %message = %message @ 0             @ "\n"; //demoOutOfTime
+      %message = %message @ 0             @ "\n"; //joinTime
+      %message = %message @ 0             @ "\n"; //joinInProgress
    }
    else
    {
-      %message = %message @ %client @ "\n";
+      %message = %message @ %client                  @ "\n";
       %message = %message @ %client.isAIControlled() @ "\n";
-      %message = %message @ %client.isAdmin @ "\n";
-      %message = %message @ %client.isSuperAdmin @ "\n";
-      %message = %message @ %client.xbLiveId @ "\n";
-      %message = %message @ %client.xbLiveSkill @ "\n";
-      %message = %message @ %client.xbLiveVoice @ "\n";
-      %message = %message @ %client.address @ "\n";
-      %message = %message @ %client.rating @ "\n";
-      %message = %message @ %client.ready @ "\n";
-      %message = %message @ %client.score @ "\n";
-      %message = %message @ %client.invited @ "\n";
-      %message = %message @ %client.demoOutOfTime @ "\n";
-      %message = %message @ %client.joinTime @ "\n";
-      %message = %message @ %client.joinInProgress @ "\n";
+      %message = %message @ %client.isAdmin          @ "\n";
+      %message = %message @ %client.isSuperAdmin     @ "\n";
+      %message = %message @ %client.xbLiveId         @ "\n";
+      %message = %message @ %client.xbLiveSkill      @ "\n";
+      %message = %message @ %client.xbLiveVoice      @ "\n";
+      %message = %message @ %client.address          @ "\n";
+      %message = %message @ %client.rating           @ "\n";
+      %message = %message @ %client.ready            @ "\n";
+      %message = %message @ %client.spectate         @ "\n";
+      %message = %message @ %client.score            @ "\n";
+      %message = %message @ %client.invited          @ "\n";
+      %message = %message @ %client.demoOutOfTime    @ "\n";
+      %message = %message @ %client.joinTime         @ "\n";
+      %message = %message @ %client.joinInProgress   @ "\n";
    }
    
    return %message;

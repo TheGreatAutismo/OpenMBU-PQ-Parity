@@ -192,7 +192,7 @@ function LobbyPopupDlg::show(%this, %clientName, %clientId, %showPlayerReview,%s
    
    if (!%this.isAwake())
    {
-      clientSetReadyStatus(false);
+      clientSetReadyStatus(false, false);
       
       Canvas.pushDialog(LobbyPopupDlg, 0);   
       

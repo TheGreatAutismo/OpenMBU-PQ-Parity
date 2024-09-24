@@ -9,23 +9,23 @@
 // and scoreboard.
 //-----------------------------------------------------------------------------
 
-addMessageCallback('MsgClientJoin', handleClientJoin);
-addMessageCallback('MsgClientDrop', handleClientDrop);
-addMessageCallback('MsgClientScoreChanged', handleClientScoreChanged);
-addMessageCallback('MsgClientSetServerParams', handleClientSetServerParams);
-addMessageCallback('MsgClientVoiceStatus', handleVoiceStatus);
-addMessageCallback('MsgClientUserRatingUpdated', handleUserRatingUpdated);
-addMessageCallback('MsgClientSettingsChanged', handleSettingsChanged);
+addMessageCallback('MsgClientJoin',               handleClientJoin);
+addMessageCallback('MsgClientDrop',               handleClientDrop);
+addMessageCallback('MsgClientScoreChanged',       handleClientScoreChanged);
+addMessageCallback('MsgClientSetServerParams',    handleClientSetServerParams);
+addMessageCallback('MsgClientVoiceStatus',        handleVoiceStatus);
+addMessageCallback('MsgClientUserRatingUpdated',  handleUserRatingUpdated);
+addMessageCallback('MsgClientSettingsChanged',    handleSettingsChanged);
 addMessageCallback('MsgClientReadyStatusChanged', handleReadyStatusChanged);
-addMessageCallback('MsgAdminForce', handleAdminForce);
-addMessageCallback('MsgClientKilled', handleClientKilled);
-addMessageCallback('MsgClientAllClientsReady', handleAllClientsReady);
-addMessageCallback('MsgClientUpdateLobbyStatus', handleUpdateLobbyStatus);
-addMessageCallback('MsgArbRegStart', handleArbRegStart);
-addMessageCallback('MsgArbReg', handleArbReg);
-addMessageCallback('MsgArbPlayerList', handleArbPlayerList);
-addMessageCallback('MsgClientVoiceStatus', handleVoiceStatus);
-addMessageCallback('MsgMPGameOver', handleMPGameOver);
+addMessageCallback('MsgAdminForce',               handleAdminForce);
+addMessageCallback('MsgClientKilled',             handleClientKilled);
+addMessageCallback('MsgClientAllClientsReady',    handleAllClientsReady);
+addMessageCallback('MsgClientUpdateLobbyStatus',  handleUpdateLobbyStatus);
+addMessageCallback('MsgArbRegStart',              handleArbRegStart);
+addMessageCallback('MsgArbReg',                   handleArbReg);
+addMessageCallback('MsgArbPlayerList',            handleArbPlayerList);
+addMessageCallback('MsgClientVoiceStatus',        handleVoiceStatus);
+addMessageCallback('MsgMPGameOver',               handleMPGameOver);
 
 //-----------------------------------------------------------------------------
 // This message is sent by the server to inform the client of global server 
@@ -97,6 +97,7 @@ function handleClientJoin(%msgType, %msgString, %clientName, %joinData, %isMe)
    %address = getRecord(%joinData, %recordIndex++);
    %rating = getRecord(%joinData, %recordIndex++);
    %ready = getRecord(%joinData, %recordIndex++);
+   %spectate = getRecord(%joinData, %recordIndex++);
    %score = getRecord(%joinData, %recordIndex++);
    %invited = getRecord(%joinData, %recordIndex++);
    %demoOutOfTime = getRecord(%joinData, %recordIndex++);
@@ -125,8 +126,7 @@ function handleClientJoin(%msgType, %msgString, %clientName, %joinData, %isMe)
    
    if (!%isAI)
    {
-      LobbyGui.update(%clientId,detag(%clientName),%xbLiveId,%xbLiveSkill,
-         %xbLiveVoice,%address,%rating,%ready,%invited,%demoOutOfTime);
+      LobbyGui.update(%clientId,detag(%clientName),%xbLiveId,%xbLiveSkill,%xbLiveVoice,%address,%rating,%ready,%spectate,%invited,%demoOutOfTime);
    }
    
    if (ServerConnection.isMultiplayer && %joinInProgress)
@@ -252,15 +252,16 @@ function handleSettingsChanged(%msgType, %msgString, %client, %isMe, %team, %tan
       setLocalPlayerTeam(%team);
 }
 
-function handleReadyStatusChanged(%msgType, %msgString, %client, %isMe, %ready, %demoOutOfTime)
+function handleReadyStatusChanged(%msgType, %msgString, %client, %isMe, %ready, %spectate, %demoOutOfTime)
 {
    if (%isMe)
    {
       ServerConnection.ready = %ready;
+      ServerConnection.spectate = %spectate;
       ServerConnection.demoOutOfTime = %demoOutOfTime;
    }
       
-   LobbyGui.updateReadyStatus(%client, %isMe, %ready, %demoOutOfTime);
+   LobbyGui.updateReadyStatus(%client, %ready, %spectate, %demoOutOfTime);
 }
 
 function handleAdminForce(%msgType, %msgString, %action, %clientName)
@@ -300,11 +301,13 @@ function handleUpdateLobbyStatus(%msgType, %msgString, %inLobby)
    // if we aren't all ready in the lobby, clear our ready status
    if (ServerConnection.inLobby)
    {
-      // clear ready status when entering the Lobby for the first time
-      if (!%wasInLobby && clientIsReady())
+      // clear ready and spectate status when entering the Lobby for the first time
+      if (!%wasInLobby && (clientIsReady() || clientIsSpectate()))
+      {
          // now we aren't
-         clientSetReadyStatus(false);
-         
+         clientSetReadyStatus(false, false);
+      }
+  
       if (!LobbyGui.isAwake() && !EndGameGui.isAwake())
          RootGui.setContent(LobbyGui);
    }

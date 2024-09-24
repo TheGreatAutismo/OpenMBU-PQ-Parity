@@ -220,7 +220,7 @@ function LobbyGui::checkDemoTime(%this)
       $Demo::TimeRemaining = 0;
       
       // we are not ready
-      clientSetReadyStatus(false);   
+      clientSetReadyStatus(false, false);
       
       // tell server we are out of time
       commandToServer('DemoOutOfTime'); 
@@ -317,13 +317,13 @@ function LobbyGui::updateHostingStatus(%this)
    }
 }
 
-function LobbyGui::getReadyIcon(%this, %ready, %demoOutOfTime)
+function LobbyGui::getReadyIcon(%this, %ready, %spectate, %demoOutOfTime)
 {
    // if we are out of time, use the "out of time" icon for ready status
    if (%demoOutOfTime)
       return    LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.demoOutOfTimeIcon;
    else if (%ready)
-      if (%client.isspectating)
+      if (%spectate)
          return LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.spectateIcon;
       else
          return LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.readyIcon;
@@ -331,7 +331,7 @@ function LobbyGui::getReadyIcon(%this, %ready, %demoOutOfTime)
       return "";
 }
 
-function LobbyGui::update(%this,%clientId,%name,%xbLiveId,%xbLiveSkill,%xbLiveVoice,%address,%rating,%ready,%invited,%demoOutOfTime)
+function LobbyGui::update(%this,%clientId,%name,%xbLiveId,%xbLiveSkill,%xbLiveVoice,%address,%rating,%ready,%spectate,%invited,%demoOutOfTime)
 {
    if (!$Client::connectedMultiplayer)
       return;
@@ -345,7 +345,7 @@ function LobbyGui::update(%this,%clientId,%name,%xbLiveId,%xbLiveSkill,%xbLiveVo
 	// this is set by updateVoiceStatus
 	%voiceIcon = LobbyGuiPlayerList.iconPath @ LobbyGuiPlayerList.voidIcon;
 	   
-	%readyIcon = %this.getReadyIcon(%ready,%demoOutOfTime);
+	%readyIcon = %this.getReadyIcon(%ready,%spectate,%demoOutOfTime);
 	   
  	if (isPCBuild()) %xbLiveVoice = getRandom(1) + 1; 
 	
@@ -441,7 +441,7 @@ function LobbyGui::resetSelectedRow(%this)
    LobbyGuiPlayerList.onSelect( LobbyGuiPlayerList.getSelectedId() ); // This will update the Y button just in case -pw
 }
 
-function LobbyGui::updateReadyStatus(%this, %client, %isMe, %ready, %demoOutOfTime)
+function LobbyGui::updateReadyStatus(%this, %client, %ready, %spectate, %demoOutOfTime)
 {
    if (!$Client::connectedMultiplayer)
       return;
@@ -454,19 +454,19 @@ function LobbyGui::updateReadyStatus(%this, %client, %isMe, %ready, %demoOutOfTi
    %rowText = LobbyGuiPlayerList.getRowText(%rowIdx);
    if (%rowText !$= "")
    {
-      %readyIcon = %this.getReadyIcon(%ready,%demoOutOfTime);
+      %readyIcon = %this.getReadyIcon(%ready,%spectate,%demoOutOfTime);
       
       %rowText = setField(%rowText, 0, %readyIcon);
       LobbyGuiPlayerList.setRowById(%client, %rowText);
       
-      if (%isMe && %this.isAwake())
-      {
-         // %JMQ: animation
-         //if (%ready)
-         //   clientStopPulseAnim();
-         //else
-         //   clientStartPulseAnim(NavControlsGui_AText, 0, -1);
-      }
+      // if (%isMe && %this.isAwake())
+      // {
+      //    %JMQ: animation
+      //    if (%ready)
+      //      clientStopPulseAnim();
+      //    else
+      //      clientStartPulseAnim(NavControlsGui_AText, 0, -1);
+      // }
    }
 }
 
@@ -865,8 +865,9 @@ function LobbyGui::onA(%this)
       return;
    }   
 
-   clientSetReadyStatus(!ServerConnection.ready);
+   clientSetReadyStatus(!ServerConnection.ready, ServerConnection.spectate);
    
+   //Don't allow ranked matches with only one player
    if (!isPCBuild() && %this.hosting && XBLiveIsRanked() && ServerConnection.ready && ClientGroup.getCount() == 1)
    {
       XMessagePopupDlg.show(0, $Text::ErrorTooFewPlayers, $Text::OK);
@@ -1022,8 +1023,8 @@ function LobbyGui::onY(%this)
    if($Player::ClientId $= %id)
    {
       XMessagePopupDlg.show(0, $Text::Spectate @ "?",
-         $Text::Yes, "commandtoServer('SetSpectateStatus', true);",
-         $Text::No,  "commandtoServer('SetSpectateStatus', false);");
+         $Text::Yes, "clientSetReadyStatus(ServerConnection.ready, true);",
+         $Text::No,  "clientSetReadyStatus(ServerConnection.ready, false);");
       //XBLiveShowGamercardUI(XBLiveGetSignInPort(), %otherXbliveid);
    }
    else
