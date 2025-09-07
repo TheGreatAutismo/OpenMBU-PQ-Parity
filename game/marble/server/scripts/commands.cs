@@ -172,12 +172,12 @@ function StartStateSetSpectate()
    }
 }
 
-// Used by the Popup when you ready up for setting the isspectating value.
-function serverCmdSetSpectateStatus(%client, %state)
-{
-   %client.isspectating = %state;
-   commandtoClient(%client, 'SpectateStatus', %client.isspectating, %client.isorbiting);
-}
+// // Used by the Popup when you ready up for setting the isspectating value.
+// function serverCmdSetSpectateStatus(%client, %state)
+// {
+//    %client.isspectating = %state;
+//    commandtoClient(%client, 'SpectateStatus', %client.isspectating, %client.isorbiting);
+// }
 
 //Spectating Logic is here. ~Connie
 function serverCmdToggleSpecMode(%client)

@@ -1013,10 +1013,8 @@ function LobbyGui::onY(%this)
       return;
       
    %id = LobbyGuiPlayerList.getSelectedId();
-   
    if (%id == -1)
       return;
-      
    sfxPlay( AudioButtonDown );
    
    // have we selected ourselves?

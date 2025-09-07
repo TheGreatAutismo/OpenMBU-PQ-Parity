@@ -51,6 +51,7 @@ function clientCmdSetPartyId(%partyId)
 //----------------------------------------------------------------------------
 // Various client support functions
 //----------------------------------------------------------------------------
+//Possibly unnecessary as handleReadyStatusChanged() also changes these values, which is eventually run anyway by this very function
 function clientSetReadyStatus(%ready, %spectate)
 {
    if ($Client::ConnectedMultiplayer && isObject(ServerConnection))
